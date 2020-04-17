@@ -1,0 +1,74 @@
+---
+title: "ACEA Pathway 2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+library(rjson)
+library(dplyr)
+library(tidyverse)
+
+restaurants <- fromJSON(file = "/Users/samirasriram/Documents/pathways/pw-2/rest3.json") # read in json data
+restaurants[["hours"]] <- NULL  
+```
+
+
+```{r}
+cit <- c()
+for(i in 1:length(restaurants)){
+  cit <- append(cit,restaurants[[i]]$city)
+}
+#choose which cities to use 
+which(table(cit) >25)
+```
+
+```{r}
+library(pipeR)
+library(rlist)
+library(dplyr)
+toronto <- restaurants %>%  list.filter(city == "Toronto") %>% list.filter(stars >=4.5) %>% list.filter(review_count >=10) #find toronto based restaurants with an average review greater than 4.5 stars with more than 10 reviews. 
+
+category <- c()
+att <- list()
+for (i in 1:length(toronto)){
+  category <-append(category, toronto[[i]]$categories) 
+  att[[i]] <- toronto[[i]]$attributes
+} #iteratively get the categories and attributes for these top toronto restaurants 
+
+categories <- unlist(strsplit(category, ', '))
+freq_cat <- as.data.frame(table(categories))
+best_cat <- freq_cat[which(freq_cat[,2] >3), ] # find which categories have more than 3 occurrences 
+
+att <- list.rbind(list.flatten(att))
+good_att <- att[att == "True", ] 
+
+best_cat #Japanese, Night Life, Mediterranean, Vietnamese
+good_att #Good for kids, has Tv, Outdoor Seating
+```
+
+```{r}
+pitt <- restaurants %>%  list.filter(city == "Pittsburgh") %>% list.filter(stars >=4.5) %>% list.filter(review_count >=5) #find pitssburgh based restaurants with an average review greater than 4.5 stars with more than 10 reviews. 
+
+category <- c()
+att <- list()
+for (i in 1:length(pitt)){
+  category <-append(category, pitt[[i]]$categories) 
+  att[[i]] <- pitt[[i]]$attributes
+} #iteratively get the categories and attributes for these top toronto restaurants 
+
+categories_pitt <- unlist(strsplit(category, ', '))
+freq_cat <- as.data.frame(table(categories_pitt))
+best_cat_pitt <- freq_cat[which(freq_cat[,2] >2), ] # find which categories have more than 3 occurrences 
+
+att <- list.rbind(list.flatten(att))
+good_att_pitt <- att[att == "True", ] 
+
+best_cat_pitt #nightlife, bars, mediteranean 
+good_att_pitt # 
+```
